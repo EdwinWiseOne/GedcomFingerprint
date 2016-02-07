@@ -3,7 +3,12 @@ import sys
 import string
 import math
 from datetime import date
+import argparse
 from gedcom import Gedcom
+
+
+date_width = 6
+
 
 
 def generate_entity_row(entity, level):
@@ -33,8 +38,6 @@ def generate_fingerprint(row, id_length, earliest_census, latest_census):
         return generate_fingerprint_title(id_length, earliest_census, latest_census)
     else:
         return generate_fingerprint_entry(row, id_length, earliest_census, latest_census)
-
-date_width = 6
 
 def generate_fingerprint_title(id_length, earliest_census, latest_census):
 
@@ -117,18 +120,34 @@ def fingerprint(gedcom, target):
     print
 
 
+
 if __name__ == "__main__":
 
-    filename = sys.argv[1]
-    firstname = sys.argv[2]
-    lastname = sys.argv[3]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("gedfilename", help="File and path to the GEDcom file")
+    parser.add_argument("-f", "--firstname", help="First name of the person to fingerprint")
+    parser.add_argument("-m", "--middlename", help="Middle name of the person to fingerprint")
+    parser.add_argument("-l", "--lastname", help="Last name of the person to fingerprint")
 
-    gedcom = Gedcom(filename)
+    args = parser.parse_args()
 
-    criteria = "name={}:surname={}".format(firstname, lastname)
+    match_criteria = []
 
+    given_names = []
+    if args.firstname is not None:
+        given_names.append(args.firstname)
+    if args.middlename is not None:
+        given_names.append(args.middlename)
+
+    if given_names is not None:
+        match_criteria.append("name={}".format(" ".join(given_names)))
+
+    if args.lastname is not None:
+        match_criteria.append("surname={}".format(args.lastname))
+
+    gedcom = Gedcom(args.gedfilename)
+
+    criteria = ":".join(match_criteria)
     for element in gedcom.element_list():
         if element.criteria_match(criteria):
             fingerprint(gedcom, element)
-
-    pass
