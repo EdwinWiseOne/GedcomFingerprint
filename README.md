@@ -53,3 +53,16 @@ Matilda Seth                1845        5     15    25    35    45    55    65
 
 For state census results, which occur on the five year mark, set the flag --state (-s)
 
+```
+python main.py ~/crouch.ged -l Wise -f Carl -s
+
+FINGERPRINT FOR CARL WILLIAM WISE
+                                  1835  1845  1855  1865  1875  1885  1895  1905  1915  1925  1935  1945  1955  1965  1975  1985  
+Wilhelm Wiese               1835  0     10    20    30    40                                                                      
+Matilda Seth                1845        0     10    20    30    40    50    60    70                                              
+    Carl William Wise       1877                                8     18    28    38    48    58    68                            
+    Lizzie Wise             1877                                8     18    28    38    48    58    68    78                      
+    ... Robert Wise         1895                                      0     10    20    30    40    50    60    70                
+    ... Edna O Thornberry   1906                                                  9     19    29    39    49    59    69    79    
+```
+
