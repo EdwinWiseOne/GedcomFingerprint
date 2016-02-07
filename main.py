@@ -71,7 +71,7 @@ def generate_fingerprint_entry(row, id_length, earliest_census, latest_census):
     return entry
 
 
-def fingerprint(gedcom, target):
+def fingerprint(gedcom, target, offset):
 
     rows = []
 
@@ -104,8 +104,10 @@ def fingerprint(gedcom, target):
             earliest_date = min(earliest_date, birth)
         latest_date = max(latest_date, int(row['final']))
     longest_id = int(math.ceil((longest_id+1) / 4.0) * 4)
-    earliest_census = int(math.ceil(earliest_date / 10.0) * 10)
-    latest_census = int(math.floor(latest_date / 10.0) * 10)
+
+    modulo = 10-offset
+    earliest_census = int(math.ceil(earliest_date / modulo) * modulo)
+    latest_census = int(math.floor(latest_date / modulo) * modulo)
 
     entries = []
     entries.append( generate_fingerprint(None, longest_id, earliest_census, latest_census))
@@ -125,6 +127,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("gedfilename", help="File and path to the GEDcom file")
+    parser.add_argument("-s", "--state", action="store_true", help="Report on the five-year mark and not on the decade")
     parser.add_argument("-f", "--firstname", help="First name of the person to fingerprint")
     parser.add_argument("-m", "--middlename", help="Middle name of the person to fingerprint")
     parser.add_argument("-l", "--lastname", help="Last name of the person to fingerprint")
@@ -145,9 +148,15 @@ if __name__ == "__main__":
     if args.lastname is not None:
         match_criteria.append("surname={}".format(args.lastname))
 
+    if args.state:
+        offset = 5
+    else:
+        offset = 0
+
     gedcom = Gedcom(args.gedfilename)
+
 
     criteria = ":".join(match_criteria)
     for element in gedcom.element_list():
         if element.criteria_match(criteria):
-            fingerprint(gedcom, element)
+            fingerprint(gedcom, element, offset)
