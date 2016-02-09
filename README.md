@@ -33,18 +33,32 @@ optional arguments:
 python main.py ~/crouch.ged -l Wise -f Carl
 
 FINGERPRINT FOR CARL WILLIAM WISE
-                                  1840  1850  1860  1870  1880  1890  1900  1910  1920  1930  1940  1950  1960  1970  1980  
-Wilhelm Wiese               1835  5     15    25    35                                                                      
-Matilda Seth                1845        5     15    25    35    45    55    65                                              
-    Carl William Wise       1877                          3     13    23    33    43    53    63                            
-    Lizzie Wise             1877                          3     13    23    33    43    53    63    73                      
-    ... Robert Wise         1895                                      5     15    25    35    45    55    65                
-    ... Edna O Thornberry   1906                                            4     14    24    34    44    54    64    74    
+   Birth - Independence, Montgomery, Kansas, USA @ 3 July 1877
+   Residence - Taney, Missouri @ 1917-1918
+   Residence - Independence, Montgomery, Kansas, USA @ 1880
+   Residence - Rural, Taney, Missouri @ 1935
+   Residence - Amador, California, USA @ 1 Apr 1940
+   Residence - Amador, California, USA @ 1942
+   Residence - Cedar Creek, Taney, Missouri, USA @ 1900
+   Residence - Cedar Creek, Taney, Missouri, USA @ 1910
+   Residence - Oliver, Taney, Missouri, USA @ 1920
+   Residence - Oliver, Taney, Missouri, USA @ 1930
+   Marriage -  @ 1896
+   Death - Long Beach, Los Angeles, California, USA @ 17 Feb 1948
+
+                                  1830  1840  1850  1860  1870  1880  1890  1900  1910  1920  1930  1940  1950  1960  1970  1980  
+Wilhelm Wiese               1835        5     15    25    35                                                                      
+Matilda Seth                1845              5     15    25    35    45    55    65                                              
+    CARL WILLIAM WISE       1877                                3     13    23    33    43    53    63                            
+    Lizzie Wise             1877                                3     13    23    33    43    53    63    73                      
+    ... Robert Wise         1895                                            5     15    25    35    45    55    65                
+    ... Edna O Thornberry   1906                                                  4     14    24    34    44    54    64    74      
     
 ```
 
-* The first line is the title for the fingerprint.
-* The second line are the possible Federal census dates for this fingerprinted family group.
+* The first line is the title for the fingerprint
+* The block under the title are the various residences listed for the target person
+* The second title lists the possible Federal census dates for this fingerprinted family group
 * The outdented people are the parents of the named target person
 * Then comes the named target person and all of their spouses
 * Finally, indented with elipses, are the children of the named target person
@@ -57,12 +71,24 @@ For state census results, which occur on the five year mark, set the flag --stat
 python main.py ~/crouch.ged -l Wise -f Carl -s
 
 FINGERPRINT FOR CARL WILLIAM WISE
+   Birth - Independence, Montgomery, Kansas, USA @ 3 July 1877
+   Residence - Taney, Missouri @ 1917-1918
+   Residence - Independence, Montgomery, Kansas, USA @ 1880
+   Residence - Rural, Taney, Missouri @ 1935
+   Residence - Amador, California, USA @ 1 Apr 1940
+   Residence - Amador, California, USA @ 1942
+   Residence - Cedar Creek, Taney, Missouri, USA @ 1900
+   Residence - Cedar Creek, Taney, Missouri, USA @ 1910
+   Residence - Oliver, Taney, Missouri, USA @ 1920
+   Residence - Oliver, Taney, Missouri, USA @ 1930
+   Marriage -  @ 1896
+   Death - Long Beach, Los Angeles, California, USA @ 17 Feb 1948
+
                                   1835  1845  1855  1865  1875  1885  1895  1905  1915  1925  1935  1945  1955  1965  1975  1985  
 Wilhelm Wiese               1835  0     10    20    30    40                                                                      
 Matilda Seth                1845        0     10    20    30    40    50    60    70                                              
-    Carl William Wise       1877                                8     18    28    38    48    58    68                            
+    CARL WILLIAM WISE       1877                                8     18    28    38    48    58    68                            
     Lizzie Wise             1877                                8     18    28    38    48    58    68    78                      
     ... Robert Wise         1895                                      0     10    20    30    40    50    60    70                
-    ... Edna O Thornberry   1906                                                  9     19    29    39    49    59    69    79    
-```
+    ... Edna O Thornberry   1906                                                  9     19    29    39    49    59    69    79    ```
 

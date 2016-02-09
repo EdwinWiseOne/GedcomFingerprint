@@ -128,7 +128,9 @@ def fingerprint(gedcom, target, offset):
         rows.append(generate_entity_row(parent, 0))
 
     # The next part are the target person themself...
-    rows.append(generate_entity_row(target, 1))
+    target_row = generate_entity_row(target, 1)
+    target_row['id'] = target_row['id'].upper()
+    rows.append(target_row)
 
     # ... and the their family...
     families = gedcom.families(target)
