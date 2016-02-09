@@ -147,7 +147,8 @@ class Gedcom:
                             date = marrdata.value()
                         if marrdata.tag() == "PLAC":
                             place = marrdata.value()
-                        marriages.append((date, place))
+                        if date or place:
+                            marriages.append((date, place))
         return marriages
 
     def marriage_years(self, individual):
@@ -653,6 +654,7 @@ class Element:
 
 
     def residences(self):
+
         """ Return list of residence tuples (date, place) for an individual. """
         residences = []
         if not self.is_individual():
@@ -667,7 +669,9 @@ class Element:
                         date = indivdata.value()
                     if indivdata.tag() == "PLAC":
                         place = indivdata.value()
-                residences.append((date, place))
+                    # if indivdata.tag() == "SOUR":
+                    #     source = source + (indivdata.value(),)
+                residences.append((date, place, source))
         return residences
 
     def last_updated(self):

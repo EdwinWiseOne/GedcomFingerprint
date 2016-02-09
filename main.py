@@ -176,10 +176,22 @@ def fingerprint(gedcom, target, offset):
     print
     print string.upper("FINGERPRINT FOR {}".format(string.join(target.name(), ' ')))
 
+
+    birth = target.birth()
+    print "   Birth - " + birth[1] + " @ " + birth[0]
+
     residences = target.residences()
     for residence in residences:
-        print "   " + residence[1] + " : " + residence[0]
+        print "   Residence - " + residence[1] + " @ " + residence[0]
 
+    marriages = gedcom.marriages(target)
+    for marriage in marriages:
+        print "   Marriage - " + marriage[1] + " @ " + marriage[0]
+
+    death = target.death()
+    print "   Death - " + death[1] + " @ " + death[0]
+
+    print
     for entry in entries:
         print entry
     print
