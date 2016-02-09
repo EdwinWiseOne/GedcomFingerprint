@@ -651,6 +651,25 @@ class Element:
                 census.append((date, place, source))
         return census
 
+
+    def residences(self):
+        """ Return list of residence tuples (date, place) for an individual. """
+        residences = []
+        if not self.is_individual():
+            raise ValueError("Operation only valid for elements with INDI tag")
+        for pdata in self.children():
+            if pdata.tag() == "RESI":
+                date = ''
+                place = ''
+                source = ''
+                for indivdata in pdata.children():
+                    if indivdata.tag() == "DATE":
+                        date = indivdata.value()
+                    if indivdata.tag() == "PLAC":
+                        place = indivdata.value()
+                residences.append((date, place))
+        return residences
+
     def last_updated(self):
         """ Return the last updated date of a person as (date) """
         date = ""

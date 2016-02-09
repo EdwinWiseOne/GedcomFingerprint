@@ -175,6 +175,11 @@ def fingerprint(gedcom, target, offset):
     # Print the fingerprint chart itself
     print
     print string.upper("FINGERPRINT FOR {}".format(string.join(target.name(), ' ')))
+
+    residences = target.residences()
+    for residence in residences:
+        print "   " + residence[1] + " : " + residence[0]
+
     for entry in entries:
         print entry
     print
