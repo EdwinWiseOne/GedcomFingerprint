@@ -170,28 +170,40 @@ def fingerprint(gedcom, target, offset):
 
     # Collect the fingerprint strings generated for each row of entity data
     entries = []
-    entries.append( generate_fingerprint(None, longest_id, earliest_census, latest_census))
+    entries.append(generate_fingerprint(None, longest_id, earliest_census, latest_census))
     for row in rows:
-        entries.append( generate_fingerprint(row, longest_id, earliest_census, latest_census))
+        entries.append(generate_fingerprint(row, longest_id, earliest_census, latest_census))
 
     # Print the fingerprint chart itself
     print
     print string.upper("FINGERPRINT FOR {}".format(string.join(target.name(), ' ')))
 
+    # Residences!
+    def generate_residence(entry):
+        return "   " + entry[0] + " - " + entry[1] + " : " + entry[2]
 
-    birth = target.birth()
-    print "   Birth - " + birth[1] + " @ " + birth[0]
-
+    locations = []
     residences = target.residences()
     for residence in residences:
-        print "   Residence - " + residence[1] + " @ " + residence[0]
+        locations.append(('Residence', residence[0], residence[1]))
 
     marriages = gedcom.marriages(target)
     for marriage in marriages:
-        print "   Marriage - " + marriage[1] + " @ " + marriage[0]
+        locations.append(('Marriage', marriage[0], marriage[1]))
+
+    # TODO: Process the dates to do comparisons across different date formats
+    locations.sort(key=lambda location:location[1])
+
+    birth = target.birth()
+    locations.insert(0, ('Birth', birth[0], birth[1]))
 
     death = target.death()
-    print "   Death - " + death[1] + " @ " + death[0]
+    locations.append(('Death', death[0], death[1]))
+
+    for location in locations:
+        print generate_residence(location)
+
+    print generate_residence(('Death', death[0], death[1]))
 
     print
     for entry in entries:
