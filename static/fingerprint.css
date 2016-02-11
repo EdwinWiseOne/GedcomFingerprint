@@ -1,0 +1,14 @@
+.box {
+    border-style: solid;
+    border-width: 1px;
+    padding: 1em;
+}
+
+th, td{
+    text-align: left;
+    padding: 0.2em 1em 0 1em;
+}
+
+tr:nth-child(even) {
+    background-color: #EEEEEE;
+}
