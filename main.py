@@ -125,16 +125,16 @@ def web_fingerprint():
 
     given_names = []
     name = form.get('firstName')
-    if name is not None:
+    if name:
         given_names.append(name)
     name = form.get('middleName')
-    if name is not None:
+    if name:
         given_names.append(name)
-    if given_names is not None:
+    if given_names:
         match_criteria.append("name={}".format(" ".join(given_names)))
 
     name = form.get('lastName')
-    if name is not None:
+    if name:
         match_criteria.append("surname={}".format(name))
 
     # The matching criteria as defined in gedcom.py criteria_match() function
@@ -463,11 +463,11 @@ if __name__ == "__main__":
         match_criteria = []
 
         given_names = []
-        if args.firstname is not None:
+        if args.firstname:
             given_names.append(args.firstname)
-        if args.middlename is not None:
+        if args.middlename:
             given_names.append(args.middlename)
-        if given_names is not None:
+        if given_names:
             match_criteria.append("name={}".format(" ".join(given_names)))
 
         if args.lastname is not None:
