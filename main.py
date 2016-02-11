@@ -205,15 +205,18 @@ def generate_entity_row(entity, level):
         id = "    ... {}".format(id)
 
     # The final year is the year of their death, if known, otherwise, today's year
+    birth_year = entity.birth_year()
     death_year = entity.death_year()
     if death_year < 0:
         final_year = date.today().year
+        if final_year - birth_year > 100:
+            final_year = birth_year + 100   # 100 years default age if none other given
     else:
         final_year = death_year
 
     return {
         'id': id,
-        'birth': entity.birth_year(),
+        'birth': birth_year,
         'death': death_year,
         'final': final_year
     }

@@ -28,6 +28,7 @@ __all__ = ["Gedcom", "Element", "GedcomParseError"]
 
 # Global imports
 import re
+import string
 
 class Gedcom:
     """Parses and manipulates GEDCOM 5.5 format data
@@ -463,12 +464,12 @@ class Element:
     def surname_match(self,name):
         """ Match a string with the surname of an individual """
         (first,last) = self.name()
-        return last.find(name) >= 0
+        return string.lower(last).find(string.lower(name)) >= 0
 
     def given_match(self,name):
         """ Match a string with the given names of an individual """
         (first,last) = self.name()
-        return first.find(name) >= 0
+        return string.lower(first).find(string.lower(name)) >= 0
 
     def birth_year_match(self,year):
         """ Match the birth year of an individual.  Year is an integer. """
