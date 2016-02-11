@@ -448,7 +448,7 @@ def table_fingerprint(fingerprint):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("gedfilename", help="File and path to the GEDcom file")
+    parser.add_argument("gedfilename", nargs='?', help="File and path to the GEDcom file")
     parser.add_argument("-w", "--web", action="store_true", help="Launch as web server (then ignores all other options)")
     parser.add_argument("-s", "--state", action="store_true", help="Report on the five-year mark and not on the decade")
     parser.add_argument("-f", "--firstname", help="First name of the person to fingerprint")
