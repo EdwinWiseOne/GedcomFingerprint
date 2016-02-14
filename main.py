@@ -196,7 +196,7 @@ def generate_entity_row(entity, level):
     '''
 
     # The row ID is the full name of the person
-    id = string.join(entity.name(), ' ')
+    id = string.join(entity.names()[0], ' ')
 
     # Indentation is baked into the ID for simplicity
     if level == 1:
@@ -299,6 +299,18 @@ def year_only(date):
         return match.group(0)
     return ''
 
+def all_names(names):
+
+    ret = string.join(names[0], ' ')
+
+    if len(names) > 1:
+        ret += " aka "
+    more_names = []
+    for idx in range(1,len(names)):
+        more_names.append(string.join(names[idx], ' '))
+    ret += string.join(more_names, ', ')
+    return ret
+
 def fingerprint_data(gedcom, target, offset):
     ''' Print an entire fingerprint record for a given target person
 
@@ -380,7 +392,7 @@ def fingerprint_data(gedcom, target, offset):
     locations.append(('Death', year_only(death[0]), death[1]))
 
     return {
-        'name': string.join(target.name(), ' '),
+        'name': all_names(target.names()),
         'locations': locations,
         'fingerprint': rows,
         'longest_id': longest_id,

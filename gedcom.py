@@ -141,15 +141,15 @@ class Gedcom:
         for family in fams_families:
             for famdata in family.children():
                 if famdata.tag() == "MARR":
+                    date = ''
+                    place = ''
                     for marrdata in famdata.children():
-                        date = ''
-                        place = ''
                         if marrdata.tag() == "DATE":
                             date = marrdata.value()
                         if marrdata.tag() == "PLAC":
                             place = marrdata.value()
-                        if date or place:
-                            marriages.append((date, place))
+                    if date or place:
+                        marriages.append((date, place))
         return marriages
 
     def marriage_years(self, individual):
@@ -463,13 +463,17 @@ class Element:
 
     def surname_match(self,name):
         """ Match a string with the surname of an individual """
-        (first,last) = self.name()
-        return string.lower(last).find(string.lower(name)) >= 0
+        for (first,last) in self.names():
+            if string.lower(last).find(string.lower(name)) >= 0:
+                return True
+        return False
 
     def given_match(self,name):
         """ Match a string with the given names of an individual """
-        (first,last) = self.name()
-        return string.lower(first).find(string.lower(name)) >= 0
+        for (first,last) in self.names():
+            if string.lower(first).find(string.lower(name)) >= 0:
+                return True
+        return False
 
     def birth_year_match(self,year):
         """ Match the birth year of an individual.  Year is an integer. """
@@ -497,14 +501,15 @@ class Element:
             return True
         return False
 
-    def name(self):
-        """ Return a person's names as a tuple: (first,last) """
-        first = ""
-        last = ""
+    def names(self):
+        """ Return an array of a person's names as a tuple: [(first,last), ...] """
+        names = []
         if not self.is_individual():
-            return (first,last)
+            return [("", "")]
         for e in self.children():
             if e.tag() == "NAME":
+                first = ""
+                last = ""
                 # some older Gedcom files don't use child tags but instead
                 # place the name in the value of the NAME tag
                 if e.value() != "":
@@ -519,7 +524,8 @@ class Element:
                             first = c.value()
                         if c.tag() == "SURN":
                             last = c.value()
-        return (first,last)
+                names.append((first, last))
+        return names
 
     def gender(self):
         """ Return the gender of a person in string format """
