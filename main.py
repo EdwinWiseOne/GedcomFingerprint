@@ -53,7 +53,7 @@ def root():
 <body>
 
 
-<h1>GEDcom Fingerprint</h1>
+<h1>GEDcom <a href="/">Fingerprint</a></h1>
 
 <div class="box">
 <h3>First, make sure your GED file is on the server:</h3>
@@ -118,29 +118,47 @@ def upload():
         return jsonify(error='Error uploading file... back up and try again.')
 
 @app.route("/fingerprint", methods=["POST"])
-def web_fingerprint():
+def post_fingerprint():
     form = request.form
+
+    args = {
+        "firstName": u"",
+        "lastName": u"",
+        "middleName": u"",
+        "state": False,
+        "gedFile": u""
+    }
+    for key,value in form.iteritems():
+        args[key] = value
+    # args.update(form)
+    target = "/fingerprint?first={firstName}&middle={middleName}&last={lastName}&state={state}&gedFile={gedFile}".format(**args)
+    return redirect(target)
+
+@app.route("/fingerprint", methods=["GET"])
+def get_fingerprint():
+
+    args = request.args
 
     match_criteria = []
 
     given_names = []
-    name = form.get('firstName')
+    name = args.get('first')
     if name:
         given_names.append(name)
-    name = form.get('middleName')
+    name = args.get('middle')
     if name:
         given_names.append(name)
     if given_names:
         match_criteria.append("name={}".format(" ".join(given_names)))
 
-    name = form.get('lastName')
+    name = args.get('last')
     if name:
         match_criteria.append("surname={}".format(name))
 
     # The matching criteria as defined in gedcom.py criteria_match() function
     criteria = ":".join(match_criteria)
 
-    if form.get('state'):
+    if args.get('state'):
         # State census dates fall on the fifth year of each decade, e.g. 1915, 1925, etc
         offset = 5
     else:
@@ -148,7 +166,7 @@ def web_fingerprint():
         offset = 0
 
     # Parse the Gedcom file, using the lovely parser we snatched out of Github
-    gedcom = Gedcom(form.get('gedFile'))
+    gedcom = Gedcom(args.get('gedFile'))
 
     html = '''
 <!DOCTYPE html>
@@ -163,7 +181,7 @@ def web_fingerprint():
 <body>
 
 
-<h1>GEDcom Fingerprint</h1>
+<h1>GEDcom <a href="/">Fingerprint</a></h1>
 
 '''
 
@@ -196,12 +214,21 @@ def generate_entity_row(entity, level):
     '''
 
     # The row ID is the full name of the person
-    id = string.join(entity.names()[0], ' ')
+    name = entity.name()
+    firstmiddle = string.split(name[0], maxsplit=1)
+    if len(firstmiddle) < 2:
+        firstmiddle = (firstmiddle[0], '')
+    link = "/fingerprint?first={}&middle={}&last={}&state={}&gedFile={}".format(firstmiddle[0], firstmiddle[1], name[1],request.args.get("state"), request.args.get("gedFile"))
+    id = string.join(name, ' ')
 
     # Indentation is baked into the ID for simplicity
-    if level == 1:
+    if level == 0:
+        link = "<a href='{}'>{}</a>".format(link, id)
+    elif level == 1:
+        link = "<b><a href='{}'>{}</a></b>".format(link, id)
         id = "    {}".format(id)
     elif level == 2:
+        link = "... <a href='{}'>{}</a>".format(link, id)
         id = "    ... {}".format(id)
 
     # The final year is the year of their death, if known, otherwise, today's year
@@ -216,12 +243,13 @@ def generate_entity_row(entity, level):
 
     return {
         'id': id,
+        'link': link,
         'birth': birth_year,
         'death': death_year,
         'final': final_year
     }
 
-def generate_fingerprint(row, id_length, earliest_census, latest_census):
+def generate_fingerprint(row, id_length, earliest_census, latest_census, web):
     '''Generate a line in the fingerprint, either the title line or details on a person
 
     :param row: details as returned by generate_entity_row()
@@ -233,11 +261,11 @@ def generate_fingerprint(row, id_length, earliest_census, latest_census):
     '''
 
     if row is None:
-        return _generate_fingerprint_header(id_length, earliest_census, latest_census)
+        return _generate_fingerprint_header(id_length, earliest_census, latest_census, web)
     else:
-        return _generate_fingerprint_entry(row, id_length, earliest_census, latest_census)
+        return _generate_fingerprint_entry(row, id_length, earliest_census, latest_census, web)
 
-def _generate_fingerprint_header(id_length, earliest_census, latest_census):
+def _generate_fingerprint_header(id_length, earliest_census, latest_census, web):
     '''Worker function to generate the string of dates for the fingerprint'''
 
     # Leading spaces to justify the census dates
@@ -251,19 +279,28 @@ def _generate_fingerprint_header(id_length, earliest_census, latest_census):
     #                                       1810  1820  1830  1840  1850  1860  1870  1880  1890  1900  1910  1920
     return title
 
-def _generate_fingerprint_entry(row, id_length, earliest_census, latest_census):
+def _generate_fingerprint_entry(row, id_length, earliest_census, latest_census, web):
     '''Worker function to generate an entry in the fingerprint'''
 
     is_target = row.get('target', False)
 
     # Identifier, which is the indentation and full name of a person, padded with spaces to fill the slot
-    entry = row['id']
-    if is_target:
-        entry = entry.upper()
-        separator = '.'
+    if web:
+        entry = row['link']
+        if is_target:
+            entry = entry.upper()
+            separator = '.'
+        else:
+            separator = ' '
+        entry = [entry]
     else:
-        separator = ' '
-    entry = [string.ljust(entry, id_length, separator)]
+        entry = row['id']
+        if is_target:
+            entry = entry.upper()
+            separator = '.'
+        else:
+            separator = ' '
+        entry = [string.ljust(entry, id_length, separator)]
 
     birth = int(row['birth'])
     final = int(row['final'])
@@ -417,9 +454,9 @@ def print_fingerprint(fingerprint):
     longest_id = fingerprint.get('longest_id')
     earliest_date = fingerprint.get('earliest_date')
     latest_date = fingerprint.get('latest_date')
-    print ''.join(generate_fingerprint(None, longest_id, earliest_date, latest_date))
+    print ''.join(generate_fingerprint(None, longest_id, earliest_date, latest_date, False))
     for row in fingerprint.get('fingerprint'):
-        print ''.join(generate_fingerprint(row, longest_id, earliest_date, latest_date))
+        print ''.join(generate_fingerprint(row, longest_id, earliest_date, latest_date, False))
 
     print
 
@@ -443,9 +480,9 @@ def table_fingerprint(fingerprint):
 
 
 
-    rows.append("<tr><th>{}</th></tr>".format("</th><th>".join(generate_fingerprint(None, 0, earliest_date, latest_date))))
+    rows.append("<tr><th>{}</th></tr>".format("</th><th>".join(generate_fingerprint(None, 0, earliest_date, latest_date, True))))
     for row in fingerprint.get('fingerprint'):
-        rows.append("<tr><td>{}</td></tr>".format("</td><td>".join(generate_fingerprint(row, 0, earliest_date, latest_date))))
+        rows.append("<tr><td>{}</td></tr>".format("</td><td>".join(generate_fingerprint(row, 0, earliest_date, latest_date, True))))
 
     html = '''
 <div class="box">
