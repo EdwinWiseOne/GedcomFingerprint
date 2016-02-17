@@ -214,7 +214,7 @@ def generate_entity_row(entity, level):
     '''
 
     # The row ID is the full name of the person
-    name = entity.name()
+    name = entity.names()[0]
     firstmiddle = string.split(name[0], maxsplit=1)
     if len(firstmiddle) < 2:
         firstmiddle = (firstmiddle[0], '')
