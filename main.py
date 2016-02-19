@@ -17,7 +17,11 @@ app = Flask(__name__)
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-app.config['ALLOWED_EXTENSIONS'] = set(['ged'])
+app.config.update(
+    DEBUG=True,
+    ALLOWED_EXTENSIONS=set(['ged']),
+    PROPAGATE_EXCEPTIONS=True
+)
 
 UPLOAD_PATH = "upload"
 
@@ -44,8 +48,9 @@ def root():
 
 <meta charset="utf-8">
 
-<title>Fingerprint</title>
+<html>
 <head>
+<title>Fingerprint</title>
 <link rel="stylesheet" href="/static/fingerprint.css">
 
 </head>
@@ -53,7 +58,7 @@ def root():
 <body>
 
 
-<h1>GEDcom <a href="/">Fingerprint</a></h1>
+<h1>GEDcom Fingerprint</h1>
 
 <div class="box">
 <h3>First, make sure your GED file is on the server:</h3>
@@ -96,7 +101,7 @@ def root():
 
 
 </body>
-
+</html>
 '''.format(**parameters)
 
     return html
@@ -139,6 +144,179 @@ def get_fingerprint():
 
     args = request.args
 
+    (gedcom, criteria, offset) = _get_data(args)
+
+    # **args keeps filling in array of string size 1, and not the string itself.  FAIL!
+    target = "/map?first={}&middle={}&last={}&state={}&gedFile={}".format(args['first'], args['middle'], args['last'], args.get('state', False), args['gedFile'])
+    html = '''
+<!DOCTYPE html>
+
+<meta charset="utf-8">
+<html>
+<head>
+<title>Fingerprint</title>
+<link rel="stylesheet" href="/static/fingerprint.css">
+</head>
+
+<body>
+
+
+<h1>GEDcom Fingerprint : <a href="/">Home</a>,  <a href="{}">Map</a></h1>
+
+'''.format(target)
+
+    # Look at EVERYONE
+    for element in gedcom.element_list():
+        # Do they match?
+        if element.criteria_match(criteria):
+            data = fingerprint_data(gedcom, element, offset)
+            html += table_fingerprint(data)
+
+    html += '''
+</body>
+</html>
+'''.format(target)
+
+    return html
+
+@app.route("/map", methods=["GET"])
+def map_fingerprint():
+
+    args = request.args
+
+    (gedcom, criteria, offset) = _get_data(args)
+
+    target = "/fingerprint?first={}&middle={}&last={}&state={}&gedFile={}".format(args['first'], args['middle'], args['last'], args.get('state', False), args['gedFile'])
+
+    address = []
+    event = []
+    date = []
+    try:
+        for element in gedcom.element_list():
+            # Do they match?
+            if element.criteria_match(criteria):
+                # A match, fingerprint them
+                data = fingerprint_data(gedcom, element, offset)
+                locations = data.get('locations')
+                for location in locations:
+                    where = location[2]
+                    if where:
+                        what = location[0]
+                        when = location[1]
+                        address.append(where)
+                        event.append(what)
+                        date.append(when)
+    except Exception as e:
+        print e
+        pass
+
+    address_field = 'addresses = ["' + string.join(address, '","') + '"]\n'
+    event_field = 'events = ["' + string.join(event, '","') + '"]\n'
+    date_field = 'dates = ["' + string.join(date, '","') + '"]\n'
+
+    html = '''
+<!DOCTYPE html>
+
+<meta charset="utf-8">
+
+<html>
+<head>
+<title>Fingerprint</title>
+<link rel="stylesheet" href="/static/fingerprint.css">
+</head>
+
+<body>
+
+<h1>GEDcom Fingerprint : <a href="/">Home</a>,  <a href="{}">Fingerprint</a></h1>
+
+
+    <div id="map"></div>
+
+    <script type="text/javascript">
+var geocoder;
+var map;
+var bounds;
+var coords;
+var path;
+
+'''.format(target) + address_field + event_field + date_field + '''
+
+
+function initMap() {
+    geocoder = new google.maps.Geocoder();
+    bounds = new google.maps.LatLngBounds()
+
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: {lat: -34.397, lng: 150.644},
+        zoom: 10
+    });
+
+
+    coords = [];
+    for (var i=0; i<addresses.length; ++i) {
+        coords.push(new google.maps.LatLng(0,0));
+    }
+    path = new google.maps.Polyline({
+        path: coords,
+        geodesic: false,
+        strokeColor: '#FF0000',
+        strokeOpacity: 1.0,
+        strokeWeight: 2
+    });
+    path.setMap(map);
+
+    for (var i=0; i<addresses.length; ++i) {
+        codeAddress(i, addresses[i], events[i], dates[i]);
+    }
+}
+
+function codeAddress(idx, address, event, date) {
+    geocoder.geocode( { 'address': address}, function(results, status) {
+
+      if (status == google.maps.GeocoderStatus.OK) {
+
+        // map.setCenter(results[0].geometry.location);
+
+        var wobble = 0.001;
+        var angle = (3.1415926 * 2.0 * idx) / 7.0;
+
+        var pos = results[0].geometry.location;
+        bounds.extend(pos);
+        map.setCenter(bounds.getCenter());
+        map.fitBounds(bounds);
+
+        coords[idx] = pos;
+        path.setPath(coords);
+
+        var newLat = pos.lat() + (Math.cos(angle) *  wobble);
+        var newLng = pos.lng() + (Math.sin(angle) *  wobble);
+
+        var marker = new google.maps.Marker({
+            map: map,
+            position: new google.maps.LatLng(newLat, newLng),
+            label: event,
+            title: event + ', ' + date + ' @ ' + address
+        });
+      } else {
+        alert("Geocode was not successful for the following reason: " + status);
+      }
+    });
+}
+
+    </script>
+
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD15Bk3bzpSS7VKGH_MyDOCQU-TgsDUQ90&callback=initMap">
+    </script>
+
+</body>
+</html>
+'''
+
+    return html
+
+
+def _get_data(args):
     match_criteria = []
 
     given_names = []
@@ -168,38 +346,8 @@ def get_fingerprint():
     # Parse the Gedcom file, using the lovely parser we snatched out of Github
     gedcom = Gedcom(args.get('gedFile'))
 
-    html = '''
-<!DOCTYPE html>
+    return (gedcom, criteria, offset)
 
-<meta charset="utf-8">
-
-<title>Fingerprint</title>
-<head>
-<link rel="stylesheet" href="/static/fingerprint.css">
-</head>
-
-<body>
-
-
-<h1>GEDcom <a href="/">Fingerprint</a></h1>
-
-'''
-
-    # Look at EVERYONE
-    for element in gedcom.element_list():
-        # Do they match?
-        if element.criteria_match(criteria):
-            # A match, fingerprint them
-            data = fingerprint_data(gedcom, element, offset)
-            html += table_fingerprint(data)
-
-    html += '''
-<h2>To get a different fingerprint, use the Back-arrow in your browser and re-submit a new name.</h2>
-
-</body>
-'''
-
-    return html
 
 def generate_entity_row(entity, level):
     '''Generate the information needed for a single row in the fingerprint.
@@ -288,7 +436,6 @@ def _generate_fingerprint_entry(row, id_length, earliest_census, latest_census, 
     if web:
         entry = row['link']
         if is_target:
-            entry = entry.upper()
             separator = '.'
         else:
             separator = ' '
