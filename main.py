@@ -267,11 +267,13 @@ function initMap() {
     path.setMap(map);
 
     for (var i=0; i<addresses.length; ++i) {
-        codeAddress(i, addresses[i], events[i], dates[i]);
+
+        setTimeout(codeAddress, 100*i, i, addresses[i], events[i], dates[i]);
     }
 }
 
 function codeAddress(idx, address, event, date) {
+
     geocoder.geocode( { 'address': address}, function(results, status) {
 
       if (status == google.maps.GeocoderStatus.OK) {
