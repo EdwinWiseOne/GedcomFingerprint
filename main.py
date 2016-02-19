@@ -6,6 +6,7 @@ import math
 from datetime import date
 import argparse
 import re
+import cgi
 from gedcom import Gedcom
 from flask import Flask, request, jsonify, redirect, url_for
 
@@ -147,7 +148,7 @@ def get_fingerprint():
     (gedcom, criteria, offset) = _get_data(args)
 
     # **args keeps filling in array of string size 1, and not the string itself.  FAIL!
-    target = "/map?first={}&middle={}&last={}&state={}&gedFile={}".format(args['first'], args['middle'], args['last'], args.get('state', False), args['gedFile'])
+    target = "/map?first={}&middle={}&last={}&state={}&gedFile={}".format(cgi.escape(args['first'], True), cgi.escape(args['middle'], True), cgi.escape(args['last'], True), args.get('state', False), args['gedFile'])
     html = '''
 <!DOCTYPE html>
 
@@ -186,7 +187,7 @@ def map_fingerprint():
 
     (gedcom, criteria, offset) = _get_data(args)
 
-    target = "/fingerprint?first={}&middle={}&last={}&state={}&gedFile={}".format(args['first'], args['middle'], args['last'], args.get('state', False), args['gedFile'])
+    target = "/fingerprint?first={}&middle={}&last={}&state={}&gedFile={}".format(cgi.escape(args['first'], True), cgi.escape(args['middle'], True), cgi.escape(args['last'], True), args.get('state', False), args['gedFile'])
 
     address = []
     event = []
