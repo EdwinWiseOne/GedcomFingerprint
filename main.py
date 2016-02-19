@@ -158,7 +158,7 @@ def get_fingerprint():
     # The matching criteria as defined in gedcom.py criteria_match() function
     criteria = ":".join(match_criteria)
 
-    if args.get('state'):
+    if string.lower(args.get('state', "False")) == 'true':
         # State census dates fall on the fifth year of each decade, e.g. 1915, 1925, etc
         offset = 5
     else:
